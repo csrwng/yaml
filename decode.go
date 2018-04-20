@@ -19,6 +19,20 @@ const (
 	aliasNode
 )
 
+type YAMLNode interface {
+	Kind() int
+	Line() int
+	Column() int
+	Tag() string
+	Alias() YAMLNode
+	Value() string
+	Implicit() bool
+	ChildrenLen() int
+	Child(int) YAMLNode
+	AnchorKeys() []string
+	Anchor(key string) YAMLNode
+}
+
 type node struct {
 	kind         int
 	line, column int
@@ -29,6 +43,54 @@ type node struct {
 	implicit bool
 	children []*node
 	anchors  map[string]*node
+}
+
+func (n *node) Kind() int {
+	return n.kind
+}
+
+func (n *node) Line() int {
+	return n.line
+}
+
+func (n *node) Column() int {
+	return n.column
+}
+
+func (n *node) Tag() string {
+	return n.tag
+}
+
+func (n *node) Alias() YAMLNode {
+	return n.alias
+}
+
+func (n *node) Value() string {
+	return n.value
+}
+
+func (n *node) Implicit() bool {
+	return n.implicit
+}
+
+func (n *node) ChildrenLen() int {
+	return len(n.children)
+}
+
+func (n *node) Child(i int) YAMLNode {
+	return n.children[i]
+}
+
+func (n *node) AnchorKeys() []string {
+	keys := []string{}
+	for k, _ := range n.anchors {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func (n *node) Anchor(key string) YAMLNode {
+	return n.anchors[key]
 }
 
 // ----------------------------------------------------------------------------

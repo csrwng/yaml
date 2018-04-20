@@ -81,6 +81,10 @@ func Unmarshal(in []byte, out interface{}) (err error) {
 	return unmarshal(in, out, false)
 }
 
+func UnmarshalWithNode(in []byte, out interface{}) (node YAMLNode, err error) {
+	return unmarshalWithNode(in, out, false)
+}
+
 // UnmarshalStrict is like Unmarshal except that any fields that are found
 // in the data that do not have corresponding struct members, or mapping
 // keys that are duplicates, will result in
@@ -134,7 +138,7 @@ func (dec *Decoder) Decode(v interface{}) (err error) {
 	return nil
 }
 
-func unmarshal(in []byte, out interface{}, strict bool) (err error) {
+func unmarshalWithNode(in []byte, out interface{}, strict bool) (n *node, err error) {
 	defer handleErr(&err)
 	d := newDecoder(strict)
 	p := newParser(in)
@@ -148,9 +152,14 @@ func unmarshal(in []byte, out interface{}, strict bool) (err error) {
 		d.unmarshal(node, v)
 	}
 	if len(d.terrors) > 0 {
-		return &TypeError{d.terrors}
+		return node, &TypeError{d.terrors}
 	}
-	return nil
+	return node, nil
+}
+
+func unmarshal(in []byte, out interface{}, strict bool) (err error) {
+	_, err = unmarshalWithNode(in, out, strict)
+	return err
 }
 
 // Marshal serializes the value provided into a YAML document. The structure
